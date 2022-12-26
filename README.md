@@ -12,7 +12,7 @@ To run the packages, we need to run on four terminals: \
 - roslaunch ccbs ccbs_main.launch \
 - roslaunch cs685 cs685_move_control_main.launch \
 
-[![2 robots ](https://github.com/buivn/images/blob/master/2robots_ccbs_ros.png)](https://youtu.be/3cM25l3SEEg) \
+[![2 robots ](https://github.com/buivn/images/blob/master/2robots_ccbs_ros.png) width="300"](https://youtu.be/3cM25l3SEEg) \
 
 
 [![3 robots ](https://github.com/buivn/images/blob/master/3robots_ccbs_ros.png)](https://youtu.be/q7LwcfWmWbQ)\
