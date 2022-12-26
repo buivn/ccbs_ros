@@ -1,0 +1,4 @@
+<launch>
+  <!-- ccbs node -->
+  <node pkg="ccbs" name="ccbs_node" type="ccbs_node"/>
+</launch>

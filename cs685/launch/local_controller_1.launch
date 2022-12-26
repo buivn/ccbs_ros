@@ -1,0 +1,101 @@
+<launch>
+  <!-- Arguments -->
+<!--   <arg name="cmd_vel_topic" default="/cmd_vel" />
+  <arg name="odom_topic" default="odom" /> -->
+
+  <arg name="odom_frame_id"   default="robot1_tf/odom"/>
+  <arg name="base_frame_id"   default="robot1_tf/base_footprint"/>
+  <arg name="global_frame_id" default="map"/>
+  <arg name="odom_topic" default="/robot1/odom" />
+  <arg name="laser_topic" default="/robot1/laser/scan" />
+  
+  <arg name="controller_id" default="1" />
+  <arg name="move_forward_only" default="false"/>
+
+  <!-- move_base -->
+  <node pkg="cs685" type="local_controller" respawn="false" name="local_controller_1" output="screen">
+    <param name="controller_id" value="$(arg controller_id)" />
+    <param name="base_local_planner" value="dwa_local_planner/DWAPlannerROS" />
+    <rosparam file="$(find cs685)/param/costmap_common_params_burger.yaml" command="load" ns="global_costmap" />
+    <rosparam file="$(find cs685)/param/costmap_common_params_burger.yaml" command="load" ns="local_costmap" />
+    <rosparam file="$(find cs685)/param/local_costmap_params.yaml" command="load" />
+    <rosparam file="$(find cs685)/param/global_costmap_params.yaml" command="load" />
+
+    <rosparam file="$(find cs685)/param/cs685_params.yaml" command="load" />
+    <rosparam file="$(find cs685)/param/dwa_local_planner_params_burger.yaml" command="load" />
+<!--     <remap from="cmd_vel" to="$(arg cmd_vel_topic)"/>
+    <remap from="odom" to="$(arg odom_topic)"/> -->
+    <param name="DWAPlannerROS/min_vel_x" value="0.0" if="$(arg move_forward_only)" />
+
+
+
+    <!-- reset frame_id parameters using user input data -->
+    <param name="global_costmap/global_frame" value="$(arg global_frame_id)"/>
+    <param name="global_costmap/robot_base_frame" value="$(arg base_frame_id)"/>
+    <param name="local_costmap/global_frame" value="$(arg odom_frame_id)"/>
+    <param name="local_costmap/robot_base_frame" value="$(arg base_frame_id)"/>
+    <param name="DWAPlannerROS/global_frame_id" value="$(arg odom_frame_id)"/>
+
+    <remap from="cmd_vel" to="/robot1/cmd_vel"/>
+    <remap from="/local_control" to="/robot1/local_control"/>
+    <remap from="odom" to="$(arg odom_topic)"/>
+    <remap from="scan" to="$(arg laser_topic)"/>
+    <remap from="map" to="/map" />
+    <remap from="/cs685_simple/goal"                                            to="/robot1/cs685_simple/goal" />
+
+
+
+    <remap from="/cs685/DWAPlannerROS/global_plan"                              to="/robot1/cs685/DWAPlannerROS/global_plan" />
+    <remap from="/cs685/DWAPlannerROS/local_plan"                               to="/robot1/cs685/DWAPlannerROS/local_plan" />
+    <remap from="/cs685/DWAPlannerROS/trajectory_cloud"                         to="/robot1/cs685/DWAPlannerROS/trajectory_cloud" />
+
+
+    <remap from="/cs685/global_costmap/costmap"                                to="/robot1/cs685/global_costmap/costmap" />
+    <remap from="/cs685/global_costmap/costmap_updates"                        to="/robot1/cs685/global_costmap/costmap_updates" />
+    <remap from="/cs685/local_costmap/costmap"                                 to="/robot1/cs685/local_costmap/costmap" />
+    <remap from="/cs685/local_costmap/costmap_updates"                         to="/robot1/cs685/local_costmap/costmap_updates" />
+    <remap from="/cs685/local_costmap/footprint"                               to="/robot1/cs685/local_costmap/footprint" />
+
+    <remap from="/cs685/GlobalPlanner/parameter_descriptions"                  to="/robot1/cs685/GlobalPlanner/parameter_descriptions" />
+    <remap from="/cs685/GlobalPlanner/parameter_updates"                       to="/robot1/cs685/GlobalPlanner/parameter_updates" />
+    
+    <remap from="/cs685/GlobalPlanner/plan"                                    to="/robot1/cs685/GlobalPlanner/plan" />
+
+    <remap from="/cs685/NavfnROS/plan"                                          to="/robot1/cs685/NavfnROS/plan" />
+    
+    <remap from="/cs685/GlobalPlanner/potential"                               to="/robot1/cs685/GlobalPlanner/potential" />
+    
+    <remap from="/cs685/DWAPlannerROS/obstacles"                                to="/robot1/cs685/DWAPlannerROS/obstacles" />
+    <remap from="/cs685/DWAPlannerROS/parameter_descriptions"                   to="/robot1/cs685/DWAPlannerROS/parameter_descriptions" />
+    <remap from="/cs685/DWAPlannerROS/parameter_updates"                        to="/robot1/cs685/DWAPlannerROS/parameter_updates" />
+    
+    <remap from="/cs685/cancel"                                                to="/robot1/cs685/cancel" />
+    <remap from="/cs685/current_goal"                                          to="/robot1/cs685/current_goal" />
+    <remap from="/cs685/feedback"                                              to="/robot1/cs685/feedback" />
+    <remap from="/cs685/global_costmap/footprint"                              to="/robot1/cs685/global_costmap/footprint" />
+    <remap from="/cs685/global_costmap/inflation_layer/parameter_descriptions" to="/robot1/cs685/global_costmap/inflation_layer/parameter_descriptions" />
+    <remap from="/cs685/global_costmap/inflation_layer/parameter_updates"      to="/robot1/cs685/global_costmap/inflation_layer/parameter_updates" />
+    <remap from="/cs685/global_costmap/obstacle_layer/clearing_endpoints"      to="/robot1/cs685/global_costmap/obstacle_layer/clearing_endpoints" />
+    <remap from="/cs685/global_costmap/obstacle_layer/parameter_descriptions"  to="/robot1/cs685/global_costmap/obstacle_layer/parameter_descriptions" />
+    <remap from="/cs685/global_costmap/obstacle_layer/parameter_updates"       to="/robot1/cs685/global_costmap/obstacle_layer/parameter_updates" />
+    <remap from="/cs685/global_costmap/parameter_descriptions"                 to="/robot1/cs685/global_costmap/parameter_descriptions" />
+    <remap from="/cs685/global_costmap/parameter_updates"                      to="/robot1/cs685/global_costmap/parameter_updates" />
+    <remap from="/cs685/global_costmap/static_layer/parameter_descriptions"    to="/robot1/cs685/global_costmap/static_layer/parameter_descriptions" />
+    <remap from="/cs685/global_costmap/static_layer/parameter_updates"         to="/robot1/cs685/global_costmap/static_layer/parameter_updates" />
+    <remap from="/cs685/goal"                                                  to="/robot1/cs685/goal" />
+    <remap from="/cs685/local_costmap/obstacle_layer/parameter_descriptions"   to="/robot1/cs685/local_costmap/obstacle_layer/parameter_descriptions" />
+    <remap from="/cs685/local_costmap/obstacle_layer/parameter_updates"        to="/robot1/cs685/local_costmap/obstacle_layer/parameter_updates" />
+    <remap from="/cs685/local_costmap/parameter_descriptions"                  to="/robot1/cs685/local_costmap/parameter_descriptions" />
+    <remap from="/cs685/local_costmap/parameter_updates"                       to="/robot1/cs685/local_costmap/parameter_updates" />
+    <remap from="/cs685/local_costmap/static_layer/parameter_descriptions"     to="/robot1/cs685/local_costmap/static_layer/parameter_descriptions" />
+    <remap from="/cs685/local_costmap/static_layer/parameter_updates"          to="/robot1/cs685/local_costmap/static_layer/parameter_updates" />
+    <remap from="/cs685/parameter_descriptions"                                to="/robot1/cs685/parameter_descriptions" />
+    <remap from="/cs685/parameter_updates"                                     to="/robot1/cs685/parameter_updates" />
+    <remap from="/cs685/result"                                                to="/robot1/cs685/result" />
+    <remap from="/cs685/status"                                                to="/robot1/cs685/status" />
+
+
+
+  </node>
+
+</launch>

@@ -1,0 +1,10 @@
+<launch>
+  <param name="/use_sim_time" value="true" />
+
+  <!-- start world -->
+  <node name="gazebo" pkg="gazebo_ros" type="gazebo"
+   args="$(find cs685)/worlds/turtlebot3_world.world" respawn="false" output="screen" />
+
+  <!-- include our robots -->
+  <include file="$(find cs685)/launch/robots.launch"/>
+</launch>

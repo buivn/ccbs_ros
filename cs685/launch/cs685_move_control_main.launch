@@ -1,0 +1,21 @@
+<launch>
+
+  <node pkg="cs685" type="move_control_client" name="move_control_client">
+    <!-- If you change the starting position of the robots, 
+          you also need to change them in gazebo launch file and rviz file-->
+    <param name="r1_start_x"                value="-0.5"/>
+    <param name="r1_start_y"                value="-1.0"/>
+    <param name="r2_start_x"                value="-2.0"/>
+    <param name="r2_start_y"                value="-0.5"/>
+    <param name="r3_start_x"                value="1.5"/>
+    <param name="r3_start_y"                value="-0.5"/>        
+    <!-- The goals should be outside of the obstacles -->
+    <param name="r1_goal_x"                value="-0.5"/>
+    <param name="r1_goal_y"                value="1.2"/>
+    <param name="r2_goal_x"                value="1.5"/>
+    <param name="r2_goal_y"                value="0."/>
+    <param name="r3_goal_x"                value="-1.5"/>
+    <param name="r3_goal_y"                value="0.5"/>        
+  </node>
+
+</launch>

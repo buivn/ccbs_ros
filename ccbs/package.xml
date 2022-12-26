@@ -1,0 +1,44 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>ccbs</name>
+  <version>0.0.0</version>
+  <description>The CCBS motion planner in ROS</description>
+
+  <!-- One maintainer tag required, multiple allowed, one person per tag -->
+  <maintainer email="bui.hoangdungtn@gmail.com">Dzung Bui</maintainer>
+
+  <!-- One license tag required, multiple allowed, one license per tag -->
+  <!-- Commonly used license strings: -->
+  <license>BSD</license>
+
+
+  <!-- Url tags are optional, but multiple are allowed, one per tag -->
+  <!-- Optional attribute type can be: website, bugtracker, or repository -->
+  <!-- <url type="website">http://wiki.ros.org/test</url> -->
+
+  <!-- Authors do not have to be maintainers, but could be -->
+  <author email="bui.hoangdungtn@gmail.com">Dzung Bui</author>
+
+
+  <!-- Dependencies can be catkin packages or system dependencies -->
+  <!-- Use depend as a shortcut for packages that are both build and exec dependencies -->
+  <!--   <depend>roscpp</depend> -->
+  <!--   Note that this is equivalent to the following: -->
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>roscpp</build_depend>
+  <build_depend>message_generation</build_depend>
+
+  <depend>geometry_msgs</depend>
+  <depend>nav_msgs</depend>
+  <depend>cs685</depend>
+  
+  <build_export_depend>roscpp</build_export_depend>
+  <exec_depend>roscpp</exec_depend>
+
+
+  <!-- The export tag contains other, unspecified, tags -->
+  <export>
+    <!-- Other tools can request additional information be placed here -->
+  </export>
+</package>
