@@ -14,8 +14,8 @@ To run the packages, we need to run on four terminals: \
 
 The results are shown in the following videos: 
 
-[![2 robots ](https://github.com/buivn/images/blob/master/2robots_ccbs_ros.png width="300")](https://youtu.be/3cM25l3SEEg) \
-
+<!-- [![2 robots ](https://github.com/buivn/images/blob/master/2robots_ccbs_ros.png)](https://youtu.be/3cM25l3SEEg) \ -->
+<a href="https://youtu.be/3cM25l3SEEg" title="2 robots"><img src="https://github.com/buivn/images/blob/master/2robots_ccbs_ros.png" width="300" height="300"></a> \
 
 [![3 robots ](https://github.com/buivn/images/blob/master/3robots_ccbs_ros.png)](https://youtu.be/q7LwcfWmWbQ)\
 
