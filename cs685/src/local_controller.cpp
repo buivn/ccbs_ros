@@ -72,18 +72,10 @@ namespace cs685 {
 
      //for commanding the base
     vel_pub_ = nh.advertise<geometry_msgs::Twist>("/cmd_vel", 1);
-    // vel_pub_ = nh.advertise<geometry_msgs::Twist>("/cmd_vel", 1);
-
-    //we'll provide a mechanism for some people to send goals as PoseStamped messages over a topic
-    //they won't get any useful information back about its status, but this is useful for tools
-    //like nav_view and rviz
-    // ros::NodeHandle simple_nh("cs685_simple");
-
     //create the ros wrapper for the planner's costmap.
     planner_costmap_ros_ = new costmap_2d::Costmap2DROS("global_costmap", tf_);
     planner_costmap_ros_->pause();
 
-    //create the ros wrapper for the controller's costmap... and initializer a pointer we'll use with the underlying map
     controller_costmap_ros_ = new costmap_2d::Costmap2DROS("local_costmap", tf_);
     controller_costmap_ros_->pause();
 
@@ -157,34 +149,8 @@ namespace cs685 {
     return true;
   }
 
-  // geometry_msgs::PoseStamped Robot_Action::goalToGlobalFrame(const geometry_msgs::PoseStamped& goal_pose_msg){
-  //   std::string global_frame = planner_costmap_ros_->getGlobalFrameID();
-  //   geometry_msgs::PoseStamped goal_pose, global_pose;
-  //   goal_pose = goal_pose_msg;
-
-  //   //just get the latest available transform... for accuracy they should send
-  //   //goals in the frame of the planner
-  //   goal_pose.header.stamp = ros::Time();
-
-  //   try{
-  //     tf_.transform(goal_pose_msg, global_pose, global_frame);
-  //   }
-  //   catch(tf2::TransformException& ex){
-  //     ROS_WARN("Failed to transform the goal pose from %s into the %s frame: %s",
-  //         goal_pose.header.frame_id.c_str(), global_frame.c_str(), ex.what());
-  //     return goal_pose_msg;
-  //   }
-
-  //   return global_pose;
-  // }
-
   void Local_Controller::executeCb(const cs685::move_controlGoalConstPtr& path)
   {
-
-    // geometry_msgs::PoseStamped goal = path->path.poses.back();
-
-    // publishZeroVelocity(); // be sure to stop the vehicles
-
     std::cout << "The frequency is: " << controller_frequency_ << std::endl;
     ros::Rate r(controller_frequency_);
     if(shutdown_costmaps_){
@@ -193,75 +159,14 @@ namespace cs685 {
       planner_costmap_ros_->start();
     }
 
-    //we want to make sure that we reset the last time we had a valid plan and control
-    // last_valid_control_ = ros::Time::now();
-    // last_oscillation_reset_ = ros::Time::now();
-
     ros::NodeHandle n;
     while(n.ok())
     {
-      // if(c_freq_change_)
-      // {
-      //   // ROS_INFO("Setting controller frequency to %.2f", controller_frequency_);
-      //   r = ros::Rate(controller_frequency_);
-      //   // c_freq_change_ = false;
-      // }
-
-      // if(as_->isPreemptRequested()){
-      //   if(as_->isNewGoalAvailable()){
-      //     //if we're active and a new goal is available, we'll accept it, but we won't shut anything down
-      //     cs685::move_controlGoal new_goal = *as_->acceptNewGoal();
-
-      //     // if(!isQuaternionValid(new_goal.target_pose.pose.orientation)){
-      //     //   as_->setAborted(move_base_msgs::MoveBaseResult(), "Aborting on goal because it was sent with an invalid quaternion");
-      //     //   return;
-      //     // }
-
-      //     goal = goalToGlobalFrame(new_goal.target_pose);
-
-      //     //we'll make sure that we reset our state for the next execution cycle
-      //     recovery_index_ = 0;
-      //     robot_state_ = PLAN;
-
-      //     //we have a new goal so make sure the planner is awake
-      //     lock.lock();
-      //     planner_goal_ = goal;
-      //     runPlanner_ = true;
-      //     planner_cond_.notify_one();
-      //     lock.unlock();
-
-      //     //publish the goal point to the visualizer
-      //     ROS_DEBUG_NAMED("cs685","cs685 has received a goal of x: %.2f, y: %.2f", goal.pose.position.x, goal.pose.position.y);
-      //     // current_goal_pub_.publish(goal);
-
-      //     //make sure to reset our timeouts and counters
-      //     last_valid_control_ = ros::Time::now();
-      //     last_valid_plan_ = ros::Time::now();
-      //     last_oscillation_reset_ = ros::Time::now();
-      //     planning_retries_ = 0;
-      //   }
-      //   else {
-      //     //if we've been preempted explicitly we need to shut things down
-      //     // resetState();
-
-      //     //notify the ActionServer that we've successfully preempted
-      //     ROS_DEBUG_NAMED("cs685","cs685 preempting the current goal");
-      //     as_->setPreempted();
-
-      //     //we'll actually return from execute after preempting
-      //     return;
-      //   }
-      // }
-
       //for timing that gives real time even in simulation
       ros::WallTime start = ros::WallTime::now();
 
       //the real work on pursuing a goal is done here
       nav_msgs::Path p = path->path;
-      // for (int i =0; i< p.poses.size();i++) {
-      //   std::cout << p.poses[i] << std::endl;
-      // }
-
       bool done = executeCycle(p);
 
       // if we're done, then we'll return from execute
@@ -274,10 +179,6 @@ namespace cs685 {
       ROS_DEBUG_NAMED("cs685","Full control cycle time: %.9f\n", t_diff.toSec());
 
       r.sleep();
-      //make sure to sleep for the remainder of our cycle time
-      // if(r.cycleTime() > ros::Duration(1 / controller_frequency_) && robot_state_ == CONTROL)
-      //   ROS_WARN("Control loop missed its desired rate of %.4fHz... the loop actually took %.4f seconds", 
-      //               controller_frequency_, r.cycleTime().toSec());
     }
 
     //if the node is killed then we'll abort and return
@@ -300,9 +201,6 @@ namespace cs685 {
     std::vector<geometry_msgs::PoseStamped> plan;
     for (auto p: path.poses)
     {
-      // wx = costmap_->getOriginX() + mx * costmap_->getResolution();
-      // wy = costmap_->getOriginY() + my * costmap_->getResolution();
-      
       p.pose.position.x = -10.0 + p.pose.position.x*0.05 - 0.0;
       p.pose.position.y = -10.0 + p.pose.position.y*0.05 +1.;  
       plan.push_back(p);
@@ -311,13 +209,10 @@ namespace cs685 {
 
     //update feedback to correspond to our curent position
     geometry_msgs::PoseStamped global_pose;
-    // getRobotPose(global_pose, planner_costmap_ros_);
     getRobotPose(global_pose, controller_costmap_ros_);
-    // const geometry_msgs::PoseStamped& current_position = global_pose;
 
     //push the feedback out
     cs685::move_controlFeedback feedback;
-    // feedback.current_pose = path.poses.back();
     feedback.current_pose = global_pose;
     as_->publishFeedback(feedback);
 
@@ -349,55 +244,14 @@ namespace cs685 {
     if(lp_->computeVelocityCommands(cmd_vel)){
       ROS_DEBUG_NAMED( "cs685", "Got a valid command from the local planner: %.3lf, %.3lf, %.3lf",
                        cmd_vel.linear.x, cmd_vel.linear.y, cmd_vel.angular.z );
-      // last_valid_control_ = ros::Time::now();
       //make sure that we send the velocity command to the base
       vel_pub_.publish(cmd_vel);
     }
     else {
       ROS_DEBUG_NAMED("cs685", "The local planner could not find a valid plan.");
-      // ros::Time attempt_end = last_valid_control_ + ros::Duration(controller_patience_);
 
       publishZeroVelocity();
     }
-
-
-
-
-    // //the move_base state machine, handles the control logic for navigation
-    // switch(robot_state_){
-
-    //   //if we're controlling, we'll attempt to find valid velocity commands
-    //   case CONTROL:
-    //     ROS_DEBUG_NAMED("cs685","In controlling state.");
-
-
-    //     //check for an oscillation condition
-    //     if(oscillation_timeout_ > 0.0 &&
-    //         last_oscillation_reset_ + ros::Duration(oscillation_timeout_) < ros::Time::now())
-    //     {
-    //       publishZeroVelocity();
-    //       robot_state_ = STOP;
-    //       // recovery_trigger_ = OSCILLATION_R;
-    //     }
-
-    //     {
-    //      boost::unique_lock<costmap_2d::Costmap2D::mutex_t> lock(*(controller_costmap_ros_->getCostmap()->getMutex()));
-
-
-
-    //     break;
-
-    //   default:
-    //     ROS_ERROR("This case should never be reached, something is wrong, aborting");
-    //     // resetState();
-    //     //disable the planner thread
-    //     // boost::unique_lock<boost::recursive_mutex> lock(planner_mutex_);
-    //     // runPlanner_ = false;
-    //     // lock.unlock();
-    //     as_->setAborted(cs685::move_controlResult(), "Reached a case that should not be hit in cs685. This is a bug, please report it.");
-    //     return true;
-    // }
-
     //we aren't done yet
     return false;
   }
