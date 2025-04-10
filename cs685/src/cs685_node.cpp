@@ -32,13 +32,9 @@
 
 int main(int argc, char** argv){
   ros::init(argc, argv, "cs685_node");
-  // std::cout << "This visited here --------------- " << std::endl; 
   tf2_ros::Buffer buffer(ros::Duration(10));
   tf2_ros::TransformListener tf(buffer);
-
   cs685::CS685 cs685( buffer );
-
-  //ros::MultiThreadedSpinner s;
   ros::spin();
 
   return(0);
