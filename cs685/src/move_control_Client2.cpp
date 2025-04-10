@@ -72,16 +72,6 @@ int main (int argc, char **argv)
     for (int i =0; i< srv.response.paths[1].poses.size();i++) {
       path3.path.poses.push_back(srv.response.paths[1].poses[i]);
     }
-
-    // for (int i =0; i< path3.path.poses.size();i++) {
-    //   std::cout << path3.path.poses[i] << std::endl;
-    // }
-
-    // for (int i =0; i< path2.path.poses.size();i++) {
-    //   std::cout << path2.path.poses[i] << std::endl;
-    // }
-
-    // path3.path = srv.response.paths[1];
     ac2.sendGoal(path2);
     ac3.sendGoal(path3);
     ROS_INFO("Sending goal - successfully.");
@@ -90,85 +80,7 @@ int main (int argc, char **argv)
   {
     ROS_ERROR("Failed to call service get-paths");
     return 1;
-  }
-
-
-  
-  
-
-  // geometry_msgs::PoseStamped next_pose; // = best_pose;
-  // next_pose.header.stamp = ros::Time::now();
-  // next_pose.header.frame_id = "map";
-  // int k;
-  // for (k = 0; k< 11; k++) {
-  //   if (k==0) {
-  //     next_pose.pose.position.x = -2.0;
-  //     next_pose.pose.position.y = -0.5;
-  //     next_pose.pose.position.z = 0.0;
-  //     next_pose.pose.orientation.x = 0.0;
-  //     next_pose.pose.orientation.y = 0.0;
-  //     next_pose.pose.orientation.z = 0.0;
-  //     next_pose.pose.orientation.w = 1.0;
-  //   }
-  //   else {
-  //     next_pose.pose.position.x += 0.1;
-  //   }
-
-  //   path2.path.poses.push_back(next_pose);
-  // }
-
-  // for (k = 0; k< 6; k++) {
-  //   next_pose.pose.position.x += 0.07;
-  //   next_pose.pose.position.y += 0.07;
-
-  //   path2.path.poses.push_back(next_pose);
-  // }
-
-  // next_pose.pose.position.x = -0.5;
-  // next_pose.pose.position.y = 0.0;
-  // path2.path.poses.push_back(next_pose);
-
-
-  // for (k = 0; k< 12; k++) {
-  //   if (k==0) {
-  //     next_pose.pose.position.x = 1.0;
-  //     next_pose.pose.position.y = 0.5;
-  //     next_pose.pose.position.z = 0.0;
-  //     next_pose.pose.orientation.x = 0.0;
-  //     next_pose.pose.orientation.y = 0.0;
-  //     next_pose.pose.orientation.z = 0.0;
-  //     next_pose.pose.orientation.w = -1.0;
-  //   }
-  //   else {
-  //     next_pose.pose.position.x -= 0.1;
-  //     next_pose.pose.position.y -= 0.1;
-  //   }
-
-  //   path3.path.poses.push_back(next_pose);
-  // }
-
-  // for (k = 0; k< 7; k++) {
-  //   next_pose.pose.position.x -= 0.1;
-  //   next_pose.pose.position.y -= 0.1;
-
-  //   path3.path.poses.push_back(next_pose);
-  // }
-
-
-  // for (k = 0; k< 15; k++) {
-  //   next_pose.pose.position.x -= 0.1;
-
-  //   path3.path.poses.push_back(next_pose);
-  // }
-
-  // next_pose.pose.position.x = -1.5;
-  // next_pose.pose.position.y = -0.5;
-  // path3.path.poses.push_back(next_pose);
-
-  
-  // ac2.sendGoal(path2);
-  // ac3.sendGoal(path3);
-
+  }  
   //wait for the action to return
   bool finished_before_timeout2 = ac2.waitForResult(ros::Duration(50.0));
 
