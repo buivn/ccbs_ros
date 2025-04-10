@@ -41,12 +41,6 @@
 
  int main(int argc, char** argv)
 {
-  // ros::init(argc, argv, "move_control_server");
-  // ros::NodeHandle nh;
-  // std::string con_id;
-  // nh.getParam("controller_id", con_id);
-  // std::string con_id;
-  // ros::init(argc, argv, "local_controller_server"+std::to_string(id));
   ros::init(argc, argv, "local_controller_server");
   tf2_ros::Buffer buffer(ros::Duration(10));
   tf2_ros::TransformListener tf(buffer);
