@@ -102,25 +102,19 @@ namespace cs685 {
     planner_plans_ = new std::vector<geometry_msgs::PoseArray>();
     std::cout << "The global motion planner:11 "<< global_planner << std::endl;
     //set up the planner's thread
-    // planner_thread_ = new boost::thread(boost::bind(&CS685::planThread, this));
     planner_threads_ = new boost::thread(boost::bind(&CS685::planThreads, this));
     std::cout << "The global motion planner22: "<< local_planner << std::endl;
     //for commanding the base
     vel_pub_ = nh.advertise<geometry_msgs::Twist>("cmd_vel", 1);
     vel_pub1_ = nh.advertise<geometry_msgs::Twist>("/robot1/cmd_vel", 1);
     vel_pub2_ = nh.advertise<geometry_msgs::Twist>("/robot2/cmd_vel", 1);
-    // current_goal_pub_ = private_nh.advertise<geometry_msgs::PoseStamped>("current_goal", 0 );
 
     ros::NodeHandle action_nh("cs685");
     action_goal_pub_ = action_nh.advertise<move_base_msgs::MoveBaseActionGoal>("goal", 1);
     recovery_status_pub_= action_nh.advertise<move_base_msgs::RecoveryStatus>("recovery_status", 1);
 
-    //we'll provide a mechanism for some people to send goals as PoseStamped messages over a topic
-    //they won't get any useful information back about its status, but this is useful for tools
-    //like nav_view and rviz
     ros::NodeHandle simple_nh("cs685_simple");
     goal_sub_ = simple_nh.subscribe<geometry_msgs::PoseStamped>("goal", 1, [this](auto& goal){ goalCB(goal); });
-    // goals_sub_ = simple_nh.subscribe<std::vector<geometry_msgs::PoseStamped>>("goals", 1, [this](auto& goals){ goalCBs(goals); });
     goals_sub_ = simple_nh.subscribe<geometry_msgs::PoseArray>("goals", 1, [this](auto& goals){ goalCBs(goals); });
 
     //we'll assume the radius of the robot to be consistent with what's specified for the costmaps
@@ -144,12 +138,6 @@ namespace cs685 {
       planner_ = bgp_loader_.createInstance(global_planner); // looking for the input class to create
       // initialize the BaseGlobalPlanner with the CS685_NavfnROS
       planner_->initialize(bgp_loader_.getName(global_planner), planner_costmap_ros_);
-      
-      // planners_ = bgp_loaders_.createInstance(global_planner); // looking for the input class to create
-      // initialize the BaseGlobalPlanner with the CS685_NavfnROS
-      // planners_->initialize(bgp_loaders_.getName(global_planner), planner_costmap_ros_);
-        
-
     } catch (const pluginlib::PluginlibException& ex) {
       ROS_FATAL("Failed to create the %s planner, are you sure it is properly registered and that the containing library is built? Exception: %s", global_planner.c_str(), ex.what());
       exit(1);
@@ -172,11 +160,6 @@ namespace cs685 {
     // Start actively updating costmaps based on sensor data
     planner_costmap_ros_->start();
     controller_costmap_ros_->start();
-
-    //advertise a service for getting a plan
-    // make_plan_srv_ = private_nh.advertiseService("make_plan", &CS685::planService, this);
-
-    //advertise a service for clearing the costmaps
     clear_costmaps_srv_ = private_nh.advertiseService("clear_costmaps", &CS685::clearCostmapsService, this);
 
     //if we shutdown our costmaps when we're deactivated... we'll do that now
@@ -312,48 +295,7 @@ namespace cs685 {
     // std::cout << goals->poses.front() << std::endl;
     planner_goals_ = *goals;
     runPlanners_ = true;
-    // std::cout << planner_goals_.poses.back() << std::endl;
-      
-    //time to plan! get a copy of the goal and unlock the mutex
-    // geometry_msgs::PoseArray temp_goals = planner_goals_;
-
-
   }
-
-  // bool CS685::planService(cs685_navfn::maPaths::Request &req, cs685_navfn::maPaths::Response &resp){
-  //   if(!goals_arrived_){
-  //     ROS_ERROR("move_base must be in an inactive state to make a plan for an external user");
-  //     return false;
-  //   }
-
-  //   geometry_msgs::PoseStamped start;
-  //   //if the user does not specify a start pose, identified by an empty frame id, then use the robot's pose
-  //   if(req.start.header.frame_id.empty())
-  //   {
-  //       geometry_msgs::PoseStamped global_pose;
-  //       if(!getRobotPose(global_pose, planner_costmap_ros_)){
-  //         ROS_ERROR("move_base cannot make a plan for you because it could not get the start pose of the robot");
-  //         return false;
-  //       }
-  //       start = global_pose;
-  //   }
-  //   else
-  //   {
-  //       start = req.start;
-  //   }
-
-
-
-
-  //   //copy the plan into a message to send out
-  //   resp.plan.poses.resize(global_plan.size());
-  //   for(unsigned int i = 0; i < global_plan.size(); ++i){
-  //     resp.plan.poses[i] = global_plan[i];
-  //   }
-  //   std::cout << "check -------------------------------------------- services -" << std::endl;
-  //   return true;
-  // }
-
 
   void CS685::clearCostmapWindows(double size_x, double size_y){
     geometry_msgs::PoseStamped global_pose;
@@ -453,7 +395,6 @@ namespace cs685 {
 
     //make sure to set the plan to be empty initially
     plan.clear();
-    // std::cout << "check ---------------------------------------------" << std::endl;
 
     //since this gets called on handle activate
     if(planner_costmap_ros_ == NULL) {
@@ -481,22 +422,11 @@ namespace cs685 {
 
   bool CS685::makePlan(const geometry_msgs::PoseArray& goals, std::vector<geometry_msgs::PoseArray>& plans)
   {
-    // boost::unique_lock<costmap_2d::Costmap2D::mutex_t> lock(*(planner_costmap_ros_->getCostmap()->getMutex()));
-
-    //make sure to set the plan to be empty initially
-    // plans.clear();
-    
-
     //get the starting pose of the robot
     geometry_msgs::PoseArray start_poses;
     start_poses.header.stamp = ros::Time::now();
     start_poses.header.frame_id = global_frame_;
-
-
     geometry_msgs::Pose p;
-
-    // pose.header.stamp = ros::Time::now();
-    // pose.header.frame_id = global_frame_;
 
     p.position.x=-2.0;
     p.position.y=-0.5;
@@ -517,21 +447,7 @@ namespace cs685 {
     p.orientation.w = 1.0;
 
     start_poses.poses.push_back(p); 
-    // if(!getRobotPose(global_pose, planner_costmap_ros_)) {
-    //   ROS_WARN("Unable to get starting pose of robot, unable to create global plan");
-    //   return false;
-    // }
-
     const geometry_msgs::PoseArray& starts = start_poses;
-    std::cout << "check in makePlan ---------------------------------------------" << std::endl;
-    //if the planner fails or returns a zero length plan, planning failed
-    // if(!planner_->makePlan_ma(starts, goals, plans) || plans.empty()){
-    //   // ROS_DEBUG_NAMED("cs685","Failed to find a  plan to point (%.2f, %.2f)", goals.pose.position.x, goal.pose.position.y);
-    //   return false;
-    // }
-    // else
-    //   std::cout << "receiving the paths back ---------------------- " << std::endl;
-
     return true;
   }
 
@@ -579,9 +495,6 @@ namespace cs685 {
     std::string global_frame = planner_costmap_ros_->getGlobalFrameID();
     geometry_msgs::PoseStamped goal_pose, global_pose;
     goal_pose = goal_pose_msg;
-
-    //just get the latest available transform... for accuracy they should send
-    //goals in the frame of the planner
     goal_pose.header.stamp = ros::Time();
 
     try{
@@ -608,7 +521,6 @@ namespace cs685 {
     ros::Timer timer;
     bool wait_for_wake = false;
     boost::unique_lock<boost::recursive_mutex> lock(planner_mutex_);
-    // std::cout << "check -------------------------------------------- planThread -" << std::endl;
     while(n.ok()){
       //check if we should run the planner (the mutex is locked)
       while(wait_for_wake || !runPlanner_){
@@ -618,8 +530,6 @@ namespace cs685 {
         wait_for_wake = false;
       }
       ros::Time start_time = ros::Time::now();
-      // std::cout << "check -------------------------------------------- planThread -" << std::endl;
-      
       //time to plan! get a copy of the goal and unlock the mutex
       geometry_msgs::PoseStamped temp_goal = planner_goal_;
       lock.unlock();
@@ -656,9 +566,6 @@ namespace cs685 {
         ROS_DEBUG_NAMED("cs685_plan_thread","No Plan...");
         ros::Time attempt_end = last_valid_plan_ + ros::Duration(planner_patience_);
 
-        //check if we've tried to make a plan for over our time limit or our maximum number of retries
-        //issue #496: we stop planning when one of the conditions is true, but if max_planning_retries_
-        //is negative (the default), it is just ignored and we have the same behavior as ever
         lock.lock();
         planning_retries_++;
         if(runPlanner_ &&
@@ -693,7 +600,6 @@ namespace cs685 {
     ros::Timer timer;
     bool wait_for_wake = false;
     boost::unique_lock<boost::recursive_mutex> lock(planners_mutex_);
-    // std::cout << "check -------------------------------------------- planThread -" << std::endl;
     while(n.ok()){
       //check if we should run the planner (the mutex is locked)
       while(wait_for_wake || !runPlanners_){
@@ -702,7 +608,6 @@ namespace cs685 {
         planners_cond_.wait(lock);
         wait_for_wake = false;
       }
-      std::cout << "check -------------------------------------------- planThread -" << std::endl;
       ros::Time start_time = ros::Time::now();
       
       //time to plan! get a copy of the goal and unlock the mutex
@@ -715,15 +620,9 @@ namespace cs685 {
       bool gotPlan = n.ok() && makePlan(temp_goals, *planner_plans_);
 
       if(gotPlan){
-        // ROS_DEBUG_NAMED("cs685_plan_thread","Got Plan with %zu points!", planner_plan_->size());
-        //pointer swap the plans under mutex (the controller will pull from latest_plan_)
-        // std::vector<std::vector<geometry_msgs::PoseStamped>>* temp_plans = planner_plans_;
-
         lock.lock();
-        // planner_plan_ = latest_plan_;
         latest_plan1_->poses = planner_plans_->front().poses;
         latest_plan2_->poses = planner_plans_->back().poses;
-        // latest_plan2_ = &planner_plans_.back();
         last_valid_plan_ = ros::Time::now();
         plannings_retries_ = 0;
         new_global_plan_ = true;
@@ -742,10 +641,6 @@ namespace cs685 {
       else if(states_==PLANNING){
         ROS_DEBUG_NAMED("cs685_plan_thread","No Plan...");
         ros::Time attempt_end = last_valid_plan_ + ros::Duration(planner_patience_);
-
-        //check if we've tried to make a plan for over our time limit or our maximum number of retries
-        //issue #496: we stop planning when one of the conditions is true, but if max_planning_retries_
-        //is negative (the default), it is just ignored and we have the same behavior as ever
         lock.lock();
         plannings_retries_++;
         if(runPlanners_ &&
@@ -762,15 +657,6 @@ namespace cs685 {
 
       //take the mutex for the next iteration
       lock.lock();
-
-      //setup sleep interface if needed
-      // if(planner_frequency_ > 0){
-      //   ros::Duration sleep_time = (start_time + ros::Duration(1.0/planner_frequency_)) - ros::Time::now();
-      //   if (sleep_time > ros::Duration(0.0)){
-      //     wait_for_wake = true;
-      //     timer = n.createTimer(sleep_time, &CS685::wakePlanner, this);
-      //   }
-      // }
     }
   }
 
@@ -780,9 +666,7 @@ namespace cs685 {
       as_->setAborted(move_base_msgs::MoveBaseResult(), "Aborting on goal because it was sent with an invalid quaternion");
       return;
     }
-
     geometry_msgs::PoseStamped goal = goalToGlobalFrame(move_base_goal->target_pose);
-
     publishZeroVelocity(); // be sure to stop the vehicles
     //we have a goal so start the planner
     boost::unique_lock<boost::recursive_mutex> lock(planner_mutex_);
@@ -790,9 +674,6 @@ namespace cs685 {
     runPlanner_ = true;
     planner_cond_.notify_one();
     lock.unlock();
-
-    // current_goal_pub_.publish(goal);
-
     ros::Rate r(controller_frequency_);
     if(shutdown_costmaps_){
       ROS_DEBUG_NAMED("cs685","Starting up costmaps that were shut down previously");
